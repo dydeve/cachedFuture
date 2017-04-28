@@ -1,0 +1,1 @@
+a simple abstraction of cache and future
