@@ -5,12 +5,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
+ * an abstract implementation of {@link CachedFuture}
  * Created by duyu3 on 2017/4/28.
  */
 public abstract class AbstractCachedFuture<P, R> implements CachedFuture<P, R> {
 
     /**
-     * it has the Semantics of "default value", can be {@code null} or defaultValue.
+     * it has the semantics of "default value", can be {@code null} or defaultValue.
      * it has benefits of setting a default value: if future.get(...) return null,
      * we can put a default value into cache(like redis, memedcache...) to avoid
      * calling future.get(...)（get data from databases, outer interfaces） frequently,
@@ -28,6 +29,16 @@ public abstract class AbstractCachedFuture<P, R> implements CachedFuture<P, R> {
     }
 
 
+    /**
+     * {@inheritDoc}
+     * @param parameter
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     */
     @Override
     public R cachedResult(P parameter, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         final long deadLine = System.nanoTime() + unit.toNanos(timeout);
@@ -46,25 +57,35 @@ public abstract class AbstractCachedFuture<P, R> implements CachedFuture<P, R> {
             result = NULL;
         }
         if (null != result) {
-            //step 3: set cache
+            //step 3: set cache. can't set {@code null} to cache
             setCache(result);
         }
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param parameter
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     @Override
     public R cachedResult(P parameter) throws InterruptedException, ExecutionException {
-        return null;
+        //step 1: get from cache
+        R result = fromCache(parameter);
+        if (null != result) {
+            return result;
+        }
+        //step 2: get from client (dbs, interfaces...)
+        result = fromClient(parameter);
+        if (result == null) {
+            result = NULL;
+        }
+        if (null != result) {
+            setCache(result);
+        }
+        return result;
     }
 
-
-    @Override
-    public R fromClient(P parameter) {
-        return null;
-    }
-
-    @Override
-    public R fromClient(P parameter, long timeout, TimeUnit unit) {
-        return null;
-    }
 }

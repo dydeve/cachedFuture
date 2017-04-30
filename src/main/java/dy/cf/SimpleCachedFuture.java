@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 异步 缓存 简单实现
  * Created by duyu3 on 2017/4/27.
  */
+@Deprecated
 public abstract class SimpleCachedFuture<P, R> implements CachedFuture<P, R> {
 
     /**
