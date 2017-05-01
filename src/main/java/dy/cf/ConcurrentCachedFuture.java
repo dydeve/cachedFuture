@@ -47,9 +47,11 @@ public abstract class ConcurrentCachedFuture<P, R> extends AbstractCachedFuture<
      */
     @Override
     public R fromClient(P parameter) throws InterruptedException, ExecutionException {
-        R r = doFromClient(parameter);
-        threadLocal.remove();
-        return r;
+        try {
+            return doFromClient(parameter);
+        } finally {
+            threadLocal.remove();
+        }
     }
 
     /**
@@ -66,9 +68,11 @@ public abstract class ConcurrentCachedFuture<P, R> extends AbstractCachedFuture<
      */
     @Override
     public R fromClient(P parameter, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
-        R r = doFromClient(parameter, timeout, unit);
-        threadLocal.remove();
-        return r;
+        try {
+            return doFromClient(parameter, timeout, unit);
+        } finally {
+            threadLocal.remove();
+        }
     }
 
     protected abstract R doFromClient(P parameter)  throws InterruptedException, ExecutionException;
